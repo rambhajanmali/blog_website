@@ -349,58 +349,60 @@
             <button class="close-btn" onclick="closeModal()">OK</button>
         </div>
     </div>
-
     <?php
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "test_db";
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "test_db";
 
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-    // Check connection
-    if ($conn->connect_error) {
-        echo "<script>showModal('Connection failed: " . $conn->connect_error . "');</script>";
-        exit();
+// Check connection
+if ($conn->connect_error) {
+    echo "<script>showModal('Connection failed: " . $conn->connect_error . "');</script>";
+    exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $headline = $_POST['headline'];
+    $paragraph = $_POST['paragraph'];
+    $images = $_FILES['image'];
+    $target_dir = "upload/";
+    $uploaded_files = [];
+
+    // Ensure the uploads directory exists
+    if (!file_exists($target_dir)) {
+        mkdir($target_dir, 0777, true);
     }
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $headline = $_POST['headline'];
-        $paragraph = $_POST['paragraph'];
-        $images = $_FILES['image'];
-        $target_dir = "upload/";
-        $uploaded_files = [];
-
-        // Ensure the uploads directory exists
-        if (!file_exists($target_dir)) {
-            mkdir($target_dir, 0777, true);
-        }
-
-        for ($i = 0; $i < count($images['name']); $i++) {
-            $target_file = $target_dir . basename($images['name'][$i]);
-            if (move_uploaded_file($images["tmp_name"][$i], $target_file)) {
-                $uploaded_files[] = $target_file;
-            } else {
-                echo "<script>showModal('Sorry, there was an error uploading your file: " . $images['name'][$i] . "');</script>";
-                $conn->close();
-                exit();
-            }
-        }
-
-        $uploaded_files_json = json_encode($uploaded_files);
-
-        $sql = "INSERT INTO uploads (headline, paragraph, images) VALUES ('$headline', '$paragraph', '$uploaded_files_json')";
-
-        if ($conn->query($sql) === TRUE) {
-            echo "<script>showModal('New record created successfully');</script>";
+    for ($i = 0; $i < count($images['name']); $i++) {
+        $target_file = $target_dir . basename($images['name'][$i]);
+        if (move_uploaded_file($images["tmp_name"][$i], $target_file)) {
+            $uploaded_files[] = $target_file;
         } else {
-            echo "<script>showModal('Error: " . $sql . "<br>" . $conn->error . "');</script>";
+            echo "<script>showModal('Sorry, there was an error uploading your file: " . $images['name'][$i] . "');</script>";
+            $conn->close();
+            exit();
         }
-
-        $conn->close();
     }
-    ?>
+
+    $uploaded_files_json = json_encode($uploaded_files);
+
+    $stmt = $conn->prepare("INSERT INTO uploads (headline, paragraph, images) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $headline, $paragraph, $uploaded_files_json);
+
+    if ($stmt->execute() === TRUE) {
+        echo "<script>showModal('New record created successfully');</script>";
+    } else {
+        echo "<script>showModal('Error: " . $stmt->error . "');</script>";
+    }
+
+    $stmt->close();
+    $conn->close();
+}
+?>
+
 </body>
 
 </html>

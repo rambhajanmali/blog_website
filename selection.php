@@ -11,8 +11,8 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
-
-$sql = "SELECT id, headline, paragraph, images FROM uploads";
+// Modify the SQL query to order by created_at column in descending order
+$sql = "SELECT id, headline, paragraph, images FROM uploads ORDER BY created_at DESC";
 $result = $conn->query($sql);
 ?>
 <!DOCTYPE html>
@@ -125,6 +125,66 @@ $result = $conn->query($sql);
         .btn-submit:hover {
             background-color: #4178d3;
         }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: black;
+        }
+
+        .header iframe {
+            margin-left: 10px;
+        }
+        .custom-checkbox {
+            position: relative;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+        }
+        
+        .custom-checkbox input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+            width: 0;
+            height: 0;
+        }
+        
+        .custom-checkbox .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            border: 2px solid #5392F9;
+            border-radius: 4px;
+        }
+        
+        .custom-checkbox input[type="checkbox"]:checked ~ .checkmark {
+            background-color: #5392F9;
+        }
+        
+        .custom-checkbox .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+        
+        .custom-checkbox input[type="checkbox"]:checked ~ .checkmark:after {
+            display: block;
+        }
         
         @media (max-width: 768px) {
             th, td {
@@ -134,8 +194,10 @@ $result = $conn->query($sql);
     </style>
 </head>
 <body>
-    <h2>Select Inputs to Post as Blogs</h2>
-    <form method="post" action="post_blogs.php">
+<div class="header">
+        <h2>Select Inputs to Post as Blogs</h2>
+        <iframe src="https://lottie.host/embed/56f72ef3-a443-456f-a5d9-c7a3108facb1/t3ADROW9wE.json" frameborder="0" height="80px" width="80px"></iframe>
+    </div>
         <table>
             <thead>
                 <tr>
@@ -154,7 +216,7 @@ $result = $conn->query($sql);
                             $imageSrcs = []; // If decoding fails, use an empty array
                         }
                         echo '<tr>';
-                        echo '<td><input type="checkbox" name="selected_inputs[]" value="' . $row["id"] . '"></td>';
+                        echo '<td><label class="custom-checkbox"><input type="checkbox" name="selected_inputs[]" value="' . $row["id"] . '"><span class="checkmark"></span></label></td>';
                         echo '<td>' . htmlspecialchars($row["headline"]) . '</td>';
                         echo '<td>' . htmlspecialchars($row["paragraph"]) . '</td>';
                         echo '<td>';
