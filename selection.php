@@ -198,6 +198,7 @@ $result = $conn->query($sql);
         <h2>Select Inputs to Post as Blogs</h2>
         <iframe src="https://lottie.host/embed/56f72ef3-a443-456f-a5d9-c7a3108facb1/t3ADROW9wE.json" frameborder="0" height="80px" width="80px"></iframe>
     </div>
+    <form action="post_blogs.php" method="post">
         <table>
             <thead>
                 <tr>

@@ -23,7 +23,9 @@ $result = $conn->query($sql);
 
 <!DOCTYPE html>
 <html>
+
 <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Blogs</title>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
@@ -61,6 +63,7 @@ $result = $conn->query($sql);
 
     .container h1 {
         text-align: center;
+        font-size: 3rem;
     }
 
     .grid {
@@ -79,6 +82,12 @@ $result = $conn->query($sql);
         height: auto;
         max-width: 450px;
     }
+    .card:hover{
+    transform: scale(1.05);
+    background-color: rgba(255,255,255.0.9);
+    transition: ease-out 0.5s ;
+    box-shadow: 2px 2px 2px rgba(255,255,255,0.6);
+    }
 
     .card img {
         max-width: 450px;
@@ -86,6 +95,7 @@ $result = $conn->query($sql);
         height: 200px;
         object-fit: cover;
         display: block;
+        background-color: #fff;
     }
 
     .card-content {
@@ -149,22 +159,7 @@ $result = $conn->query($sql);
         background-color: #ddd;
     }
 
-    /* Mobile view adjustments */
-    @media (max-width: 425px) {
-        .grid {
-            grid-template-columns: 1fr; /* Ensure only one card per line */
-            gap: 20px; /* Adjust gap for mobile screens if needed */
-        }
-
-        .card {
-            max-width: 100%; /* Ensure the card takes up the full width of its container */
-            box-sizing: border-box; /* Include padding and border in the card's total width */
-        }
-        .container{
-            max-width: 600px;
-            width: 50%;
-        }
-    }
+  
 </style>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
