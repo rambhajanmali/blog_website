@@ -67,7 +67,7 @@ $total_pages = ceil($total_posts / $posts_per_page);
     }
     .create button {
         padding: 5px 10px;
-        background-color: #007bff;
+        background-color: #34552f;
         color: white;
         border: none;
         cursor: pointer;
