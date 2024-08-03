@@ -17,15 +17,22 @@ if ($conn->connect_error) {
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($page - 1) * $posts_per_page;
 
-$sql = "SELECT id, headline, paragraph, images FROM blogs ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
+// Fetch blog posts for the current page
+$sql = "SELECT id, headline, paragraph, images, created_at FROM blogs ORDER BY created_at DESC LIMIT $posts_per_page OFFSET $offset";
 $result = $conn->query($sql);
+
+// Fetch the total number of blog posts for pagination
+$count_sql = "SELECT COUNT(*) as total FROM blogs";
+$count_result = $conn->query($count_sql);
+$total_posts = $count_result->fetch_assoc()['total'];
+$total_pages = ceil($total_posts / $posts_per_page);
 ?>
 
 <!DOCTYPE html>
 <html>
 
 <head>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blogs</title>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css"/>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css"/>
@@ -37,56 +44,80 @@ $result = $conn->query($sql);
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;    
-        background: linear-gradient(135deg,#80BCBD,#AAD9BB,#D5F0C1,#F9F7C9);
-        background-size: 400% 400%;
-        animation: gradientBackground 5s ease infinite;
+        overflow-x: hidden;
+        background:#c5dfc5;
     }
-
-    @keyframes gradientBackground {
-        0% {
-            background-position: 0% 50%;
-        }
-        50% {
-            background-position: 100% 50%;
-        }
-        100% {
-            background-position: 0% 50%;
-        }
+    header{
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
-
     .container {
-        width: 90%;
+        width: 60%;
         max-width: 1200px;
         margin: auto;
         padding: 20px;
     }
 
-    .container h1 {
+    .create{
+        width: 100%;
+        position: relative;
+        left: 85vw;
+        margin-bottom: 30px;
+    }
+    .create button {
+        padding: 5px 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 30px;
+        transition: all 0.3s ease; 
+        font-weight: bold;
+    }
+
+    .create button:hover {
+        padding: 12px 24px;
+        transform: scale(1.15); 
+    }
+
+    .create .plus-sign {
+        display: inline-block;
+        transition: transform 0.3s ease; 
+    }
+
+    .create button:hover .plus-sign {
+        transform: rotate(90deg); 
+    }
+
+    header h1 {
         text-align: center;
-        font-size: 3rem;
+        font-size: 4rem;
+    }
+    header h2{
+        font-size: 2rem;
     }
 
     .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 40px;
+       columns: 2;
+       gap: 40px;
     }
 
     .card {
         background: white;
-        border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         display: flex;
         flex-direction: column;
         height: auto;
         max-width: 450px;
+        margin-bottom: 40px;
     }
     .card:hover{
-    transform: scale(1.05);
-    background-color: rgba(255,255,255.0.9);
-    transition: ease-out 0.5s ;
-    box-shadow: 2px 2px 2px rgba(255,255,255,0.6);
+        transform: scale(1.005);
+        background-color: rgba(255,255,255.0.9);
+        transition: ease-out 0.5s ;
+        box-shadow: 2px 2px 2px rgba(255,255,255,0.6);
     }
 
     .card img {
@@ -132,7 +163,8 @@ $result = $conn->query($sql);
         color: #007bff;
         cursor: pointer;
         margin-top: 10px;
-        display: inline-block;
+        display: flex;
+        justify-content: flex-end;
     }
 
     .slick-slide img {
@@ -153,12 +185,41 @@ $result = $conn->query($sql);
         border: 1px solid #ddd;
         margin: 0 4px;
         border-radius: 4px;
-    }
-
-    .pagination a:hover {
         background-color: #ddd;
     }
 
+    .pagination a:hover {
+        background-color: grey;
+        color: white;
+    }
+
+    .pagination a.active {
+        background-color: #007bff;
+        color: white;
+        border: 1px solid #007bff;
+    }
+
+    .card-content .date {
+        font-size: 0.9em;
+        color: #888;
+        margin-top: 5px;
+    }
+    @media (max-width: 430px) {
+        .container {
+            width: 90%;
+            padding: 10px;
+        }
+        .grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .card {
+            max-width: 100%;
+        }
+        .card img{
+            max-width: 100%;
+        }
+    }
   
 </style>
 
@@ -204,8 +265,19 @@ $result = $conn->query($sql);
     </script>
 </head>
 <body>
+    <header>
+        <div style="display: flex; align-items: center;">
+            <img src="earth_image.png" style="width: 150px; margin-right: 30px;" alt="">
+            <h1>GPSPL</h1>
+            <h2>Blogs</h2>
+        </div>
+    </header>
+    <div class="create">
+        <button onclick="window.location.href='index.php'" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px;">
+            <span class="plus-sign">+</span> Create New Blog
+        </button>
+    </div>
     <div class="container">
-        <h1>Blogs</h1>
         <div class="grid">
             <?php
             if ($result->num_rows > 0) {
@@ -213,6 +285,7 @@ $result = $conn->query($sql);
                     $headline = htmlspecialchars($row["headline"]);
                     $paragraph = htmlspecialchars($row["paragraph"]);
                     $imageSrcs = json_decode($row["images"], true); // Decode JSON to array
+                    $created_at = htmlspecialchars($row["created_at"]); // Get the created_at field
 
                     echo '<div class="card">';
                     if (is_array($imageSrcs) && !empty($imageSrcs)) {
@@ -226,12 +299,19 @@ $result = $conn->query($sql);
                         echo '</div>';
                     }
                     echo '<div class="card-content">';
+                    echo '<p class="date"> ' . date("F j, Y", strtotime($created_at)) . '</p>';
+
                     echo '<h2>' . $headline . '</h2>';
+
+                    // Display the date
+                    echo '<hr class="separator"  >';
 
                     // Check if the paragraph is longer than a certain length to decide whether to show "Show More"
                     if (strlen($paragraph) > 50) {
                         echo '<p class="short-paragraph">' . substr($paragraph, 0, 50) . '...</p>'; // Show short text
                         echo '<p class="full-paragraph">' . $paragraph . '</p>'; // Show full text hidden initially
+                       
+                        // echo '<hr class="separator">';
                         echo '<span class="show-more">Show More</span>';
                     } else {
                         echo '<p>' . $paragraph . '</p>'; // Show full text without "Show More"
@@ -247,14 +327,38 @@ $result = $conn->query($sql);
         </div>
         <div class="pagination">
             <?php
-            // Get the total number of blog posts for pagination
-            $count_sql = "SELECT COUNT(*) as total FROM blogs";
-            $count_result = $conn->query($count_sql);
-            $total_posts = $count_result->fetch_assoc()['total'];
-            $total_pages = ceil($total_posts / $posts_per_page);
-
-            for ($i = 1; $i <= $total_pages; $i++) {
-                echo '<a href="?page=' . $i . '">' . $i . '</a>';
+            // Ensure the current page is within bounds
+            $current_page = max(1, min($page, $total_pages));
+            
+            // Determine the start and end page numbers to display
+            $start_page = max(1, $current_page - 2);
+            $end_page = min($total_pages, $current_page + 2);
+            
+            // Adjust the start and end pages to ensure we always show 5 pages if possible
+            if ($end_page - $start_page < 4) {
+                $end_page = min($total_pages, $start_page + 4);
+            }
+            if ($end_page - $start_page < 4) {
+                $start_page = max(1, $end_page - 4);
+            }
+            
+            // Display the "Previous" link
+            if ($current_page > 1) {
+                echo '<a href="?page=' . ($current_page - 1) . '">&lt;</a>';
+            }
+            
+            // Display the page number links
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                if ($i == $current_page) {
+                    echo '<a href="?page=' . $i . '" class="active">' . $i . '</a>';
+                } else {
+                    echo '<a href="?page=' . $i . '">' . $i . '</a>';
+                }
+            }
+            
+            // Display the "Next" link
+            if ($current_page < $total_pages) {
+                echo '<a href="?page=' . ($current_page + 1) . '">&gt;</a>';
             }
             ?>
         </div>

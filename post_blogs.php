@@ -15,27 +15,41 @@ if ($conn->connect_error) {
 if (isset($_POST['submit'])) {
     if (!empty($_POST['selected_inputs'])) {
         $selected_ids = $_POST['selected_inputs'];
+        
+        // Prepare statement for insertion
+        $stmt_insert = $conn->prepare("INSERT INTO blogs (headline, paragraph, images) VALUES (?, ?, ?)");
+        
+        // Prepare statement for deletion
+        $stmt_delete = $conn->prepare("DELETE FROM uploads WHERE id=?");
+
         foreach ($selected_ids as $id) {
             // Retrieve the headline, paragraph, and image for the current ID
-            $sql = "SELECT headline, paragraph, images FROM uploads WHERE id='$id'";
-            $result = $conn->query($sql);
+            $stmt_select = $conn->prepare("SELECT headline, paragraph, images FROM uploads WHERE id=?");
+            $stmt_select->bind_param("i", $id);
+            $stmt_select->execute();
+            $result = $stmt_select->get_result();
+            
             if ($result->num_rows > 0) {
                 $row = $result->fetch_assoc();
                 $headline = $row['headline'];
                 $paragraph = $row['paragraph'];
                 $image = $row['images'];
 
-                // Insert the headline, paragraph, and image into the blogs table
-                $insert_sql = "INSERT INTO blogs (headline, paragraph, images) VALUES ('$headline', '$paragraph', '$image')";
-                if ($conn->query($insert_sql) === TRUE) {
-                    // Delete the inserted data from the uploads table
-                    $delete_sql = "DELETE FROM uploads WHERE id='$id'";
-                    $conn->query($delete_sql);
+                // Bind parameters and execute insertion
+                $stmt_insert->bind_param("sss", $headline, $paragraph, $image);
+                if ($stmt_insert->execute()) {
+                    // Bind parameter and execute deletion
+                    $stmt_delete->bind_param("i", $id);
+                    $stmt_delete->execute();
                 } else {
-                    echo "Error: " . $insert_sql . "<br>" . $conn->error;
+                    echo "Error: " . $stmt_insert->error;
                 }
             }
+            $stmt_select->close();
         }
+
+        $stmt_insert->close();
+        $stmt_delete->close();
         header("Location: blogs.php");
         exit(); // Ensure no further code is executed
     } else {
