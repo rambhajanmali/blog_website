@@ -204,13 +204,26 @@ $total_pages = ceil($total_posts / $posts_per_page);
         color: #888;
         margin-top: 5px;
     }
+    
     @media (max-width: 430px) {
+       .create{
+        width: 45%;
+        left: 26vw;
+        margin: auto;
+       }
+       header h1{
+        font-size: 3rem;
+       }
+       header h2{
+        font-size: 1.5rem;
+       }
         .container {
             width: 90%;
             padding: 10px;
         }
         .grid {
-            grid-template-columns: 1fr;
+            /* grid-template-columns: 1fr; */
+            column-count: 1;
             gap: 20px;
         }
         .card {
@@ -227,16 +240,22 @@ $total_pages = ceil($total_posts / $posts_per_page);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
     <script>
-        $(document).ready(function(){
-            $('.image-slider').slick({
+    $(document).ready(function(){
+        $('.image-slider').each(function() {
+            var $slider = $(this);
+
+            $slider.slick({
                 dots: true,
                 infinite: true,
-                speed: 300,
+                speed: 300, 
                 slidesToShow: 1,
-                adaptiveHeight: true
+                slidesToScroll: 1,
+                adaptiveHeight: true,
+                arrows: false, 
+                autoplay: false 
             });
 
-            $("[data-fancybox='gallery']").fancybox({
+            $slider.find("[data-fancybox='gallery']").fancybox({
                 loop: true,
                 buttons: [
                     'zoom',
@@ -245,24 +264,48 @@ $total_pages = ceil($total_posts / $posts_per_page);
                     'close'
                 ]
             });
+            $slider.on('mouseenter', function() {
+                var slick = $slider.slick('getSlick');
+                var slideCount = slick.slideCount;
+                var currentSlideIndex = slick.currentSlide;
 
-            // Show More functionality
-            $('.show-more').on('click', function() {
-                var $this = $(this);
-                var fullParagraph = $this.siblings('.full-paragraph');
-                var shortParagraph = $this.siblings('.short-paragraph');
-                if (fullParagraph.is(':visible')) {
-                    fullParagraph.hide();
-                    shortParagraph.show();
-                    $this.text('Show More');
-                } else {
-                    fullParagraph.show();
-                    shortParagraph.hide();
-                    $this.text('Show Less');
-                }
+                
+                var moveNextSlide = function() {
+                    slick.slickNext();
+
+                    if (slick.currentSlide >= slideCount - 1) {
+                        slick.slickPause(); 
+                    }
+                };
+
+                var autoSlideInterval = setInterval(moveNextSlide, 1000);
+                $slider.on('mouseleave', function() {
+                    clearInterval(autoSlideInterval);
+                    slick.slickPause(); 
+                });
             });
         });
-    </script>
+
+        // Show More functionality
+        $('.show-more').on('click', function() {
+            var $this = $(this);
+            var fullParagraph = $this.siblings('.full-paragraph');
+            var shortParagraph = $this.siblings('.short-paragraph');
+            if (fullParagraph.is(':visible')) {
+                fullParagraph.hide();
+                shortParagraph.show();
+                $this.text('Show More');
+            } else {
+                fullParagraph.show();
+                shortParagraph.hide();
+                $this.text('Show Less');
+            }
+        });
+    });
+</script>
+
+
+
 </head>
 <body>
     <header>
@@ -284,12 +327,12 @@ $total_pages = ceil($total_posts / $posts_per_page);
                 while ($row = $result->fetch_assoc()) {
                     $headline = htmlspecialchars($row["headline"]);
                     $paragraph = htmlspecialchars($row["paragraph"]);
-                    $imageSrcs = json_decode($row["images"], true); // Decode JSON to array
-                    $created_at = htmlspecialchars($row["created_at"]); // Get the created_at field
+                    $imageSrcs = json_decode($row["images"], true); 
+                    $created_at = htmlspecialchars($row["created_at"]); 
 
                     echo '<div class="card">';
                     if (is_array($imageSrcs) && !empty($imageSrcs)) {
-                        // Display the images in a slider with Fancybox for full-screen view
+                        
                         echo '<div class="image-slider">';
                         foreach ($imageSrcs as $imageSrc) {
                             echo '<div><a href="' . htmlspecialchars($imageSrc) . '" data-fancybox="gallery" data-caption="' . htmlspecialchars($headline) . '">
@@ -303,18 +346,15 @@ $total_pages = ceil($total_posts / $posts_per_page);
 
                     echo '<h2>' . $headline . '</h2>';
 
-                    // Display the date
+                    
                     echo '<hr class="separator"  >';
 
-                    // Check if the paragraph is longer than a certain length to decide whether to show "Show More"
                     if (strlen($paragraph) > 50) {
                         echo '<p class="short-paragraph">' . substr($paragraph, 0, 50) . '...</p>'; // Show short text
-                        echo '<p class="full-paragraph">' . $paragraph . '</p>'; // Show full text hidden initially
-                       
-                        // echo '<hr class="separator">';
+                        echo '<p class="full-paragraph">' . $paragraph . '</p>';
                         echo '<span class="show-more">Show More</span>';
                     } else {
-                        echo '<p>' . $paragraph . '</p>'; // Show full text without "Show More"
+                        echo '<p>' . $paragraph . '</p>'; 
                     }
 
                     echo '</div>';
@@ -327,6 +367,7 @@ $total_pages = ceil($total_posts / $posts_per_page);
         </div>
         <div class="pagination">
             <?php
+            
             // Ensure the current page is within bounds
             $current_page = max(1, min($page, $total_pages));
             

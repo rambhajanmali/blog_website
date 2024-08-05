@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Upload Form</title>
     <style>
         .error {
@@ -168,6 +166,51 @@
         .file-upload-container.dragover {
             border-color: #5392F9;
         }
+        a {
+    display: flex;
+    text-decoration: none;
+    color: #5392F9;
+    margin-left: 70%;
+    margin-top: 5px;
+    position: relative;
+    overflow: hidden;
+    padding-right: 20px; 
+    font-size: 20px;
+}
+
+a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px; 
+    background-color: #5392F9;
+    transition: width 0.3s ease; 
+}
+
+a::after {
+    content: '→'; 
+    position: absolute;
+    right:18px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    font-size: 20px; 
+    font-weight: bold;
+    transition: opacity 0.3s ease, transform 0.3s ease; 
+}
+
+a:hover::before {
+    width: 90%;
+}
+
+a:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(5px); 
+}
+
+
 
         /* Media queries */
         @media (min-width: 768px) {
@@ -210,6 +253,7 @@
             }
         }
     </style>
+    
     <script>
         const maxFileSize = 5000000; // 5MB in bytes
         const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
@@ -342,6 +386,7 @@
                         <span id="error-message" class="error"></span><br>
                         <button id="submit-button" value="Upload" type="submit" disabled>Submit</button>
                     </form>
+                    <a href="blogs.php">View Blogs</a>
                 </div>
             </div>
         </div>
@@ -373,10 +418,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $images = $_FILES['image'];
     $target_dir = "upload/";
     $uploaded_files = [];
+    $ip_address = $_SERVER['REMOTE_ADDR']; // Get the user's IP address
 
     // Ensure the uploads directory exists
     if (!file_exists($target_dir)) {
         mkdir($target_dir, 0777, true);
+    }
+
+    // Check the number of posts from the same IP address in the last 24 hours
+    $sql = "SELECT COUNT(*) as post_count FROM uploads WHERE ip_address = ? AND timestamp > NOW() - INTERVAL 1 DAY";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $ip_address);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $post_count = $row['post_count'];
+
+    if ($post_count >= 2) {
+        echo "<script>showModal('You have already submitted two posts in the last 24 hours. You cannot submit more.');</script>";
+        $stmt->close();
+        $conn->close();
+        exit();
     }
 
     for ($i = 0; $i < count($images['name']); $i++) {
@@ -392,8 +454,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $uploaded_files_json = json_encode($uploaded_files);
 
-    $stmt = $conn->prepare("INSERT INTO uploads (headline, paragraph, images) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $headline, $paragraph, $uploaded_files_json);
+    $stmt = $conn->prepare("INSERT INTO uploads (headline, paragraph, images, ip_address) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param("ssss", $headline, $paragraph, $uploaded_files_json, $ip_address);
 
     if ($stmt->execute() === TRUE) {
         echo "<script>showModal('New record created successfully');</script>";
@@ -407,5 +469,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 ?>
 
 </body>
-
 </html>

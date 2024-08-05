@@ -1,4 +1,25 @@
 <?php
+
+
+session_start();
+
+// Session timeout after 0.1 minutes of inactivity
+$timeout_duration = 10;
+
+if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity']) > $timeout_duration) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php");
+    exit();
+}
+
+$_SESSION['last_activity'] = time();
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header("Location: login.php");
+    exit();
+}
+
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -11,6 +32,7 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+
 // Modify the SQL query to order by created_at column in descending order
 $sql = "SELECT id, headline, paragraph, images FROM uploads ORDER BY created_at DESC";
 $result = $conn->query($sql);

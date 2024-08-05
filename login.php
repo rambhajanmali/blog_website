@@ -1,67 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            margin-top: 50px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-        .form-group button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        .register-link {
-            margin-top: 15px;
-            display: block;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Admin Login</h2>
-        <form action="authenticate.php" method="post">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="form-group">
-                <button type="submit">Login</button>
-            </div>
-        </form>
-        <a href="register.php" class="register-link">New user? Register here</a> -->
-    <!-- </div>
-</body>
-</html>  -->
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -321,8 +257,6 @@ background: linear-gradient(180deg, #8bcdf9, #66ffba);
             </div>
             <div class="form-group">
                 <button id="submit-button" type="submit">Login</button>
-               <!-- <iframe src="https://lottie.host/embed/ae9f1d00-9a21-4df2-8adb-0db2662a2841/TzYpj3cHTe.json" style="width: 25px; height:
-                    25px; margin:10px;" frameborder="0"></iframe> -->
             </div>
         </form>
         <!-- <a href="register.php" class="register-link">New user? Register here</a>  -->
@@ -332,9 +266,6 @@ background: linear-gradient(180deg, #8bcdf9, #66ffba);
                   </div>
             </div>
         </div>
-
-
-
 
         <div class="wave-container">
             <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none">
@@ -350,6 +281,13 @@ background: linear-gradient(180deg, #8bcdf9, #66ffba);
             </svg>
         </div>
     </section>
+
+    <script>
+window.addEventListener("beforeunload", function (e) {
+    navigator.sendBeacon('logout.php');
+});
+</script>
+
 
 </body>
 </html>
