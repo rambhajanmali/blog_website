@@ -226,7 +226,7 @@ input[type="text"], input[type="password"]{
     background-color: #fff;
     cursor: pointer;
     font-weight: bold;
-    /* display: flex; */
+   
 }
 #submit-button:hover{
 transform: scale(1.05);
